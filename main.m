@@ -2,9 +2,10 @@ clc; close all; clear;
 pkg load image
 pkg load signal
 pkg load communications
-ImageOriginal=imread('bird_small.png');
 
-fprintf('\nimage loaded successfully\n');
+function CompressedImg = CompressImage(ImageOriginal)
+
+
 ImageSize=8*prod(size(ImageOriginal));
 imshow(ImageOriginal);
 fprintf('\nsize of original image is %d\n',ImageSize);
@@ -71,13 +72,14 @@ subplot(1,2,1)
 imshow(ycbcr2rgb(Y_d))
 title('Original')
 subplot(1,2,2)
-imshow(ycbcr2rgb(uint8(R)));
+step1save=ycbcr2rgb(uint8(R));
+imshow(step1save);
 title('Compressed')
 pause;
 fprintf("\nstep 1 compression result\n");
 CompressedImageSize = 8*nnz(P(:,:,1)) + 7*nnz(P(:,:,2)) + 7*nnz(P(:,:,3))
 CompressedImageSize/ImageSize
-
+imwrite(step1save,"step1save.jpg")
 
 
 %Huffman codeing
@@ -105,3 +107,11 @@ title('Original')
 subplot(1,2,2)
 imshow(ycbcr2rgb(uint8(B)));
 title('Compressed')
+
+end
+
+ImageOriginal=imread('bird_small.png');
+ImageOriginal2=imread('SamplePNGImage_10mbmb.png');
+fprintf('\nimage 1 loaded successfully\n');
+CompressImage(ImageOriginal2);
+CompressImage(ImageOriginal);
