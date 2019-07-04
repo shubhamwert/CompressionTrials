@@ -23,9 +23,8 @@ imshow( I )
 title('Original')
 subplot(1,2,2)
 Y_d = Y;
-Y_d(:,:,1) = 10*round(Y_d(:,:,1)/10);
-Y_d(:,:,2) = 30*round(Y_d(:,:,2)/30);
-Y_d(:,:,3) = 30*round(Y_d(:,:,3)/30);
+Y_d(:,:,2) = 3*round(Y_d(:,:,2)/3);
+Y_d(:,:,3) = 3*round(Y_d(:,:,3)/3);
 imshow(ycbcr2rgb(Y_d))
 title('Downsampled image')
 
@@ -54,22 +53,29 @@ Q = [16 11 10 16 24 40 51 61 ;
      72 92 95 98 112 100 103 99];
 fprintf("\n\ncalcualting")
 Y = Q.*round(Y./Q);
+
 for i=1:3
-    for j=1:8:size(Y_d,2)
-    fprintf(".");
-            for k = 1:8:size(Y_d,2)
+    for j=1:8:size(Y_d,1)-7
+   
+        for k = 1:8:size(Y_d,2)-7
+            fprintf(".");
             II = Y_d(j:j+7,k:k+7,i);
             freq = dct(dct(II).').';
             freq = Q.*round(freq./Q);
             P(j:j+7,k:k+7,i) = freq;
             R(j:j+7,k:k+7,i) = idct(idct(freq).').';
+            if rem(k/8,4)==0
+            fprintf("\b\b\b\b")
+            end
+        
         end
+        fprintf("\ncalculating for j == ",j);
     end
 end
 
 fprintf("\nplotting results for step 1\n")
 subplot(1,2,1)
-imshow(ycbcr2rgb(Y_d))
+imshow(ImageOriginal)
 title('Original')
 subplot(1,2,2)
 step1save=ycbcr2rgb(uint8(R));
@@ -82,25 +88,18 @@ CompressedImageSize/ImageSize
 imwrite(step1save,"step1save.jpg")
 
 
-%Huffman codeing
+%Huffman coding
 
 fprintf("Huffman Coding>>")
+b = P(:); b = b(:); b(b==0)=[];  
+ b = floor(255*(b-min(b))/(max(b)-min(b))); 
+ symbols = unique(b); 
+ prob = histc(b,length(symbols))/length(b); 
+ dict = huffmandict(symbols, prob);
+  enco = huffmanenco(b, dict); 
+ FinalCompressedImage = length(enco); 
+FinalCompressedImage/ImageSize 
 
-b=P(:);
-size(b)
-b=b(:);
-size(b)
-b(b==0)=[]; 
-b = floor(255*(b-min(b))/(max(b)-min(b)));                          #normalizing
-
-symbols=double(unique(b));
-prob = histc(b,symbols)/length(b);
-
-dict = huffmandict(symbols, prob);
-
-enco = huffmanenco(b, dict);
-FinalCompressedImage = length(enco)
-length(enco)/ImageSize 
 subplot(1,2,1)
 imshow(I)
 title('Original')
